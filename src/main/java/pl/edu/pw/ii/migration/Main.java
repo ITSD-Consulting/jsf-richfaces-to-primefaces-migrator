@@ -60,15 +60,9 @@ public class Main {
 
 
         TransformerFactory factory = TransformerFactory.newInstance();
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        spf.setNamespaceAware(true);
-        XMLReader r = spf.newSAXParser().getXMLReader();
-        EntityResolver er = new CatalogResolver();
-        r.setEntityResolver(er);
-
         Source xslt = new StreamSource(ClassLoader.getSystemResourceAsStream("migration.xslt"));
         Templates templates = factory.newTemplates(xslt);
-        xsltTransform(files, templates, r, recursive);
+        xsltTransform(files, templates, recursive);
     }
 
     private File[] getFilesToProcess() {
@@ -99,24 +93,24 @@ public class Main {
         System.setProperty("javax.xml.transform.TransformerFactory", "net.sf.saxon.TransformerFactoryImpl");
     }
 
-     private void xsltTransform(File[] files, final Templates templates, final XMLReader xmlReader, boolean recursive) throws IOException, TransformerException, ParserConfigurationException, SAXException {
+     private void xsltTransform(File[] files, final Templates templates, boolean recursive) throws IOException, TransformerException, ParserConfigurationException, SAXException {
         Arrays.stream(files).parallel().forEach(file -> {
             try {
                 String name = file.getName();
                 if (file.isDirectory() && !ignoredDirNames.contains(name)) {
                     if (recursive) {
-                        xsltTransform(file.listFiles(), templates, xmlReader, recursive);
+                        xsltTransform(file.listFiles(), templates, recursive);
                     }
                     return;
                 }
-                trnasformFile(templates, xmlReader, file);
+                trnasformFile(templates, file);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
 
-    private void trnasformFile(Templates templates, XMLReader xmlReader, File file) throws ParserConfigurationException, IOException, TransformerException, SAXException {
+    private void trnasformFile(Templates templates, File file) throws ParserConfigurationException, IOException, TransformerException, SAXException {
         Transformer transformer = templates.newTransformer();
 
 
@@ -133,21 +127,28 @@ public class Main {
                 return;
             }
 
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setNamespaceAware(true);
+            XMLReader xmlReader = spf.newSAXParser().getXMLReader();
+            xmlReader.setEntityResolver((publicId, systemId) -> {
+                return  new InputSource(new StringReader("")); // Never resolve any IDs
+            });
+
+
+
             String text = new String(Files.readAllBytes(oldName.toPath()));
 //            text = replaceStrings(text);
 
-            SAXSource s = new SAXSource(xmlReader, new InputSource(new StringReader(text)));
-//            Source source =  new StreamSource(new StringReader(text));
+            SAXSource source = new SAXSource(xmlReader, new InputSource(new StringReader(text)));
+//            Source source = new StreamSource(new StringReader(text));
             System.out.println("XSLT transformation started: "+file.getAbsolutePath());
 
             StreamResult result = new StreamResult(file);
 //                    Document doc = db.parse(new FileInputStream(oldName));
-            transformer.transform(s, result);
-
+            transformer.transform(source, result);
             text = new String(Files.readAllBytes(file.toPath()));
             text = replaceStrings(text);
             FileUtils.write(file, text);
-
             System.out.println("XSLT transformed file: "+file.getAbsolutePath());
         }
     }
