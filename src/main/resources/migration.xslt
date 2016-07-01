@@ -114,7 +114,7 @@
 
 
 
-    <!--a4j:repeat-->
+    <!--a4j:repeat  rowKeyVar -->
     <xsl:template match="a4j:repeat" name="a4j:repeat">
         <ui:repeat>
             <xsl:apply-templates select="@*|node()" />
@@ -146,7 +146,17 @@
         </p:toolbar>
     </xsl:template>
 
-    <!--rich:toolbarGroup TODO -->
+    <!--rich:toolbarGroup  -->
+    <xsl:template match="rich:toolbarGroup" name="rich:toolbarGroup">
+        <p:toolbarGroup>
+            <xsl:apply-templates select="@*|node()" />
+        </p:toolbarGroup>
+    </xsl:template>
+
+    <xsl:template match="rich:toolbarGroup/@location">
+        <xsl:attribute name="align"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+
 
     <!--rich:tooltip-->
     <xsl:template match="rich:tooltip" name="rich:tooltip">
@@ -180,5 +190,165 @@
     </xsl:template>
 
     <!--rich:popupPanel-->
+    <xsl:template match="rich:popupPanel" name="rich:popupPanel">
+        <p:dialog>
+            <xsl:apply-templates select="@*|node()" />
+        </p:dialog>
+    </xsl:template>
+
+
+    <!--rich:contextMenu-->
+    <xsl:template match="rich:contextMenu" name="rich:contextMenu">
+        <p:contextMenu>
+            <xsl:apply-templates select="@*|node()" />
+        </p:contextMenu>
+    </xsl:template>
+
+    <!--rich:menuItem-->
+    <xsl:template match="rich:menuItem" name="rich:menuItem">
+        <p:menuitem>
+
+
+            <xsl:apply-templates select="@*|node()" />
+
+            <xsl:element name="span">
+                <xsl:value-of select="@label" />
+            </xsl:element>
+
+        </p:menuitem>
+    </xsl:template>
+
+
+    <xsl:template match="rich:menuItem/@render">
+        <xsl:attribute name="update"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:menuItem/@execute">
+        <xsl:attribute name="process"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+
+
+
+    <!--rich:tree-->
+    <xsl:template match="rich:tree" name="rich:tree">
+        <p:tree>
+            <xsl:apply-templates select="@*|node()" />
+        </p:tree>
+    </xsl:template>
+    <xsl:template match="rich:tree/@render">
+        <xsl:attribute name="update"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:tree/@execute">
+        <xsl:attribute name="process"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+
+    <!--rich:treeNode-->
+    <xsl:template match="rich:treeNode" name="rich:treeNode">
+        <p:treeNode>
+            <xsl:apply-templates select="@*|node()" />
+        </p:treeNode>
+    </xsl:template>
+    <xsl:template match="rich:treeNode/@render">
+        <xsl:attribute name="update"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:treeNode/@execute">
+        <xsl:attribute name="process"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+
+
+    <xsl:template match="rich:dataGrid" name="rich:dataGrid">
+        <p:dataGrid>
+            <xsl:apply-templates select="@*|node()" />
+        </p:dataGrid>
+    </xsl:template>
+
+    <!--a4j:outputPanel -->
+
+    <xsl:template match="a4j:outputPanel" name="a4j:outputPanel">
+        <p:outputPanel>
+            <xsl:apply-templates select="@*|node()" />
+        </p:outputPanel>
+    </xsl:template>
+    <xsl:template match="a4j:outputPanel/@ajaxRendered">
+        <xsl:attribute name="autoUpdate"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+
+    <!--rich:tabPanel-->
+
+    <xsl:template match="rich:tabPanel" name="rich:tabPanel">
+        <p:tabView>
+            <xsl:apply-templates select="@*|node()" />
+        </p:tabView>
+    </xsl:template>
+
+    <!--rich:tab-->
+    <xsl:template match="rich:tab" name="rich:tab">
+        <p:tab>
+            <xsl:apply-templates select="@*|node()" />
+        </p:tab>
+    </xsl:template>
+    <xsl:template match="rich:tab/@header">
+        <xsl:attribute name="title"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+
+    <!--rich:calendar-->
+    <xsl:template match="rich:calendar" name="rich:calendar">
+        <p:calendar>
+            <xsl:apply-templates select="@*|node()" />
+        </p:calendar>
+    </xsl:template>
+
+    <!--rich:editor-->
+    <xsl:template match="rich:editor" name="rich:editor">
+        <p:editor>
+            <xsl:apply-templates select="@*|node()" />
+        </p:editor>
+    </xsl:template>
+
+    <!--rich:inplaceInput-->
+    <xsl:template match="rich:inplaceInput" name="rich:inplaceInput">
+        <p:inplace>
+            <xsl:apply-templates select="@*|node()" />
+
+            <xsl:element name="h:inputText">
+                <xsl:attribute name="value"><xsl:value-of select="@value" /></xsl:attribute>
+            </xsl:element>
+        </p:inplace>
+    </xsl:template>
+    <xsl:template match="rich:inplaceInput/@value" />
+    <xsl:template match="rich:inplaceInput/@editEvent">
+        <xsl:attribute name="event"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+
+    <!--rich:fileUpload-->
+
+    <xsl:template match="rich:fileUpload" name="rich:fileUpload">
+        <p:fileUpload>
+            <xsl:apply-templates select="@*|node()" />
+        </p:fileUpload>
+    </xsl:template>
+    <xsl:template match="rich:fileUpload/@maxFilesQuantity">
+        <xsl:attribute name="fileLimit"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:fileUpload/@addLabel">
+        <xsl:attribute name="label"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:fileUpload/@acceptedTypes"> <!--FIXME allowTypes is regex-->
+        <xsl:attribute name="allowTypes"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:fileUpload/@immediateUpload">
+        <xsl:attribute name="auto"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:fileUpload/@onuploadcomplete">
+        <xsl:attribute name="oncomplete"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:fileUpload/@render">
+        <xsl:attribute name="update"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <xsl:template match="rich:fileUpload/@execute">
+        <xsl:attribute name="process"><xsl:value-of select="." /></xsl:attribute>
+    </xsl:template>
+    <!--autoclear-->
+
+
 
 </xsl:stylesheet>
