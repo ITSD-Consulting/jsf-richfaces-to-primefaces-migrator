@@ -40,6 +40,14 @@
 		<xsl:apply-templates />
 	</xsl:template>
 
+	<xsl:template match="ui:composition">
+		<ui:composition>
+			<xsl:apply-templates select="@*|node()" />
+			<h:head />
+		</ui:composition>
+
+	</xsl:template>
+
 
 	<xsl:template match="a4j:support" name="a4j:support">
 		<p:ajax>
@@ -68,7 +76,6 @@
 	<xsl:template match="a4j:commandButton"
 		name="a4j:commandButton">
 		<h:commandButton>
-			<f:ajax />
 			<xsl:apply-templates select="@*|node()" />
 		</h:commandButton>
 	</xsl:template>
@@ -210,7 +217,7 @@
 	<!--rich:modalPanel -->
 	<xsl:template match="rich:modalPanel"
 		name="rich:modalPanel">
-		<p:dialog>
+		<p:dialog modal="true">
 			<xsl:apply-templates select="@*|node()" />
 		</p:dialog>
 	</xsl:template>
@@ -421,15 +428,23 @@
 	<xsl:template match="rich:simpleTogglePanel"
 		name="rich:simpleTogglePanel">
 		<p:accordionPanel>
-			<xsl:apply-templates select="@*|node()" />
+			<p:tab>
+				<xsl:apply-templates select="@*|node()" />
+			</p:tab>
 		</p:accordionPanel>
 	</xsl:template>
-	
+
 	<xsl:template match="rich:listShuttle"
 		name="rich:listShuttle">
 		<p:pickList>
 			<xsl:apply-templates select="@*|node()" />
 		</p:pickList>
+	</xsl:template>
+
+	<xsl:template match="rich:spacer" name="rich:spacer">
+		<p:spacer>
+			<xsl:apply-templates select="@*|node()" />
+		</p:spacer>
 	</xsl:template>
 
 	<!--autoclear -->
