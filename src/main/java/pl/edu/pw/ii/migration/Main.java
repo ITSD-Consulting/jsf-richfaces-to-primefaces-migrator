@@ -40,12 +40,14 @@ public class Main {
 
     public static void main(String[] args) throws TransformerException, IOException, ParserConfigurationException, SAXException {
         Main main = new Main();
+        System.out.println("Migrator wird ausgeführt");
         JCommander jCommander = new JCommander(main, args);
         if(main.help){
             jCommander.usage();
             return;
         }
         main.run();
+        System.out.println("Migrator beendet");
     }
 
     private void run() throws ParserConfigurationException, TransformerException, SAXException, IOException {
