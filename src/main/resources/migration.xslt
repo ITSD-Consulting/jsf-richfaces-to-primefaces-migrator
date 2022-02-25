@@ -8,6 +8,8 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:fn="http://www.w3.org/2005/xpath-functions"
 	exclude-result-prefixes="#all">
 
 	<xsl:output method="xml" encoding="utf-8"
@@ -38,14 +40,6 @@
 
 	<xsl:template match="a4j:region">
 		<xsl:apply-templates />
-	</xsl:template>
-
-	<xsl:template match="ui:composition">
-		<ui:composition>
-			<xsl:apply-templates select="@*|node()" />
-			<h:head />
-		</ui:composition>
-
 	</xsl:template>
 
 
@@ -293,6 +287,10 @@
 			<xsl:apply-templates select="@*|node()" />
 		</p:dataGrid>
 	</xsl:template>
+	<xsl:template match="rich:dataGrid/@rowKeyVar">
+		<xsl:attribute name="rowIndexVar"><xsl:value-of
+			select="." /></xsl:attribute>
+	</xsl:template>
 
 	<!--a4j:outputPanel -->
 
@@ -329,16 +327,57 @@
 	<!--rich:calendar -->
 	<xsl:template match="rich:calendar" name="rich:calendar">
 		<p:calendar>
+			<xsl:if test="f:attribute[@name = 'maxlength']">
+				<xsl:variable name="AttributeMaxLength"
+					select="string(f:attribute/@value)" />
+
+				<xsl:attribute name="maxlength"><xsl:value-of
+					select="$AttributeMaxLength" /></xsl:attribute>
+			</xsl:if>
+			<xsl:choose>
+				<xsl:when test="@enableManualInput eq 'true'">
+					<xsl:attribute name="readOnlyInput">
+		<xsl:value-of select="'false'" /></xsl:attribute>
+				</xsl:when>
+				<xsl:when test="@enableManualInput eq 'false'">
+					<xsl:attribute name="readOnlyInput">
+		<xsl:value-of select="'true'" /></xsl:attribute>
+				</xsl:when>
+			</xsl:choose>
 			<xsl:apply-templates select="@*|node()" />
+
 		</p:calendar>
 	</xsl:template>
-
+	<xsl:template match="rich:calendar/@datePattern">
+		<xsl:attribute name="pattern"><xsl:value-of
+			select="." /></xsl:attribute>
+	</xsl:template>
+	<xsl:template match="rich:calendar/@direction">
+		<xsl:attribute name="dir"><xsl:value-of
+			select="." /></xsl:attribute>
+	</xsl:template>
+	<xsl:template match="rich:calendar/@showFooter">
+		<xsl:attribute name="showButtonPanel"><xsl:value-of
+			select="." /></xsl:attribute>
+	</xsl:template>
+	<xsl:template match="rich:calendar/@inputSize">
+		<xsl:attribute name="size"><xsl:value-of
+			select="." /></xsl:attribute>
+	</xsl:template>
+	<xsl:template match="rich:calendar/@enableManualInput">
+	</xsl:template>
+	<xsl:template match="rich:calendar/@showApplyButton">
+	</xsl:template>
 	<!--rich:editor -->
 	<xsl:template match="rich:editor" name="rich:editor">
 		<p:editor>
 			<xsl:apply-templates select="@*|node()" />
 		</p:editor>
 	</xsl:template>
+	<xsl:template match="f:attribute[@name='maxlength']"
+		name="f:attribute">
+	</xsl:template>
+
 
 	<!--rich:inplaceInput -->
 	<xsl:template match="rich:inplaceInput"

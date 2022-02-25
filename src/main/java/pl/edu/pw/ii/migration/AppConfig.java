@@ -7,10 +7,11 @@ import java.util.*;
 
 public class AppConfig {
     static boolean notMigratedOnly;
-    static boolean createOldFileBackup;
     static boolean recursive;
+    static boolean preserveSourceFile;
     static Set<String> ignoredDirNames = new HashSet<>();
     static String webContentPath;
+    static String webTargetPath;
     static String oldFileBackupPrefix;
     static Map<String, String> stringsToReplace = new HashMap<>();
 
@@ -22,11 +23,12 @@ public class AppConfig {
 
     public static void read(Config conf) {
         webContentPath = conf.getString("migrator.webContentPath");
+        webTargetPath = conf.getString("migrator.webTargetPath");
         ignoredDirNames.addAll(conf.getStringList("migrator.ignoredDirNames"));
 
         recursive = conf.getBoolean("migrator.recursive");
         notMigratedOnly = conf.getBoolean("migrator.notMigratedOnly");
-        createOldFileBackup=conf.getBoolean("migrator.createOldFileBackup");
+        preserveSourceFile=conf.getBoolean("migrator.preserveSourceFile");
         oldFileBackupPrefix=conf.getString("migrator.oldFileBackupPrefix");
 
         System.out.println("Web content path: " + conf.getString("migrator.webContentPath"));

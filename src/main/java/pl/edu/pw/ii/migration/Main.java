@@ -29,137 +29,171 @@ import static pl.edu.pw.ii.migration.AppConfig.*;
 
 public class Main {
 
-    @Parameter(names =  { "--configFile", "-c" }, description = "Custom config file location")
-    private String configFileParam;
+	@Parameter(names = { "--configFile", "-c" }, description = "Custom config file location")
+	private String configFileParam;
 
-    @Parameter(names =  { "--webContentPath", "-wcp" }, description = "Web content path with files to process. Takes precedence over value from config file")
-    private String webContentPathParam;
+	@Parameter(names = { "--webContentPath",
+			"-wcp" }, description = "Web content path with files to process. Takes precedence over value from config file")
+	private String webContentPathParam;
 
-    @Parameter(names = { "--help", "-h" }, help = true)
-    private boolean help;
+	@Parameter(names = { "--webTargetPath",
+			"-wtp" }, description = "Web target path for location of result file. Takes precedence over value from config file")
+	private String webTargetPathParam;
 
-    public static void main(String[] args) throws TransformerException, IOException, ParserConfigurationException, SAXException {
-        Main main = new Main();
-        System.out.println("Migrator wird ausgeführt");
-        JCommander jCommander = new JCommander(main, args);
-        if(main.help){
-            jCommander.usage();
-            return;
-        }
-        main.run();
-        System.out.println("Migrator beendet");
-    }
+	@Parameter(names = { "--help", "-h" }, help = true)
+	private boolean help;
 
-    private void run() throws ParserConfigurationException, TransformerException, SAXException, IOException {
-        initConfiguration();
+	public static void main(String[] args)
+			throws TransformerException, IOException, ParserConfigurationException, SAXException {
+		Main main = new Main();
+		System.out.println("Migrator wird ausgeführt");
+		JCommander jCommander = new JCommander(main, args);
+		if (main.help) {
+			jCommander.usage();
+			return;
+		}
+		main.run();
+		System.out.println("Migrator beendet");
+	}
 
-        File[] files = getFilesToProcess();
+	private void run() throws ParserConfigurationException, TransformerException, SAXException, IOException {
+		initConfiguration();
 
-        processFiles(files);
-    }
+		File[] files = getFilesToProcess();
 
-    private void processFiles(File[] files) throws IOException, TransformerException, ParserConfigurationException, SAXException {
+		processFiles(files);
+	}
 
+	private void processFiles(File[] files)
+			throws IOException, TransformerException, ParserConfigurationException, SAXException {
 
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Source xslt = new StreamSource(ClassLoader.getSystemResourceAsStream("migration.xslt"));
-        Templates templates = factory.newTemplates(xslt);
-        xsltTransform(files, templates, recursive);
-    }
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source xslt = new StreamSource(ClassLoader.getSystemResourceAsStream("migration.xslt"));
+		Templates templates = factory.newTemplates(xslt);
+		xsltTransform(files, templates, recursive);
+	}
 
-    private File[] getFilesToProcess() {
-        File webContentPathFile = new File(webContentPath);
-        File[] files = null;
-        if(webContentPathFile.isDirectory()){
-            files = webContentPathFile.listFiles();
-        }else{
-            files = new File[]{webContentPathFile};
-        }
-        return files;
-    }
+	private File[] getFilesToProcess() {
+		File webContentPathFile = new File(webContentPath);
+		File[] files = null;
+		if (webContentPathFile.isDirectory()) {
+			files = webContentPathFile.listFiles();
+		} else {
+			files = new File[] { webContentPathFile };
+		}
+		if (preserveSourceFile) {
 
-    private void initConfiguration() {
+			File webTargetPathFile = new File(webTargetPath);
+			Arrays.stream(files).parallel().forEach(file -> {
+				try {
+					String name = file.getName();
+					if (file.isDirectory() && !ignoredDirNames.contains(name)) {
+						return;
+					}
+					FileUtil.copyFileToDirectory(file, webTargetPathFile);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
 
-        Config config = ConfigFactory.load();
-        File customConfigFile = new File(configFileParam);
-        if(customConfigFile.isFile()){
-            Config customConfig = ConfigFactory.parseFile(customConfigFile);
-            config = customConfig.withFallback(config);
-        }
+			if (webTargetPathFile.isDirectory()) {
+				files = webTargetPathFile.listFiles();
+			} else {
+				files = new File[] { webTargetPathFile };
+			}
 
-        AppConfig.read(config);
+		}
+		return files;
+	}
 
-        if(StringUtils.isNotBlank(webContentPathParam)){
-            webContentPath = webContentPathParam;
-        }
-        System.setProperty("javax.xml.transform.TransformerFactory", "net.sf.saxon.TransformerFactoryImpl");
-    }
+	private void initConfiguration() {
 
-     private void xsltTransform(File[] files, final Templates templates, boolean recursive) throws IOException, TransformerException, ParserConfigurationException, SAXException {
-        Arrays.stream(files).parallel().forEach(file -> {
-            try {
-                String name = file.getName();
-                if (file.isDirectory() && !ignoredDirNames.contains(name)) {
-                    if (recursive) {
-                        xsltTransform(file.listFiles(), templates, recursive);
-                    }
-                    return;
-                }
-                trnasformFile(templates, file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
+		Config config = ConfigFactory.load();
+		File customConfigFile = new File(configFileParam);
+		if (customConfigFile.isFile()) {
+			Config customConfig = ConfigFactory.parseFile(customConfigFile);
+			config = customConfig.withFallback(config);
+		}
 
-    private void trnasformFile(Templates templates, File file) throws ParserConfigurationException, IOException, TransformerException, SAXException {
-        Transformer transformer = templates.newTransformer();
+		AppConfig.read(config);
 
+		if (StringUtils.isNotBlank(webContentPathParam)) {
+			webContentPath = webContentPathParam;
+		}
 
+		if (StringUtils.isNotBlank(webTargetPathParam)) {
+			webTargetPath = webTargetPathParam;
+		}
+		System.setProperty("javax.xml.transform.TransformerFactory", "net.sf.saxon.TransformerFactoryImpl");
+	}
 
-        String filename = file.getName();
-        String ext_file = filename.substring(filename.lastIndexOf(".") + 1, filename.length());
-        String ext = "xhtml";
-        String oldFileName = file.getParent() +"/"+ oldFileBackupPrefix + filename;
-        File oldName = new File(oldFileName);
-        if (ext.equals(ext_file) && !filename.startsWith(oldFileBackupPrefix)) {
-            if (!oldName.exists() && createOldFileBackup) {
-                FileUtil.copyFile(file, oldName);
-            }else if(notMigratedOnly){
-                return;
-            }
+	private void xsltTransform(File[] files, final Templates templates, boolean recursive)
+			throws IOException, TransformerException, ParserConfigurationException, SAXException {
+		Arrays.stream(files).parallel().forEach(file -> {
+			try {
+				String name = file.getName();
+				if (file.isDirectory() && !ignoredDirNames.contains(name)) {
+					if (recursive) {
+						xsltTransform(file.listFiles(), templates, recursive);
+					}
+					return;
+				}
+				trnasformFile(templates, file);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
 
-            SAXParserFactory spf = SAXParserFactory.newInstance();
-            spf.setNamespaceAware(true);
-            XMLReader xmlReader = spf.newSAXParser().getXMLReader();
-            xmlReader.setEntityResolver((publicId, systemId) -> {
-                return  new InputSource(new StringReader("")); // Never resolve any IDs
-            });
+	private void trnasformFile(Templates templates, File file)
+			throws ParserConfigurationException, IOException, TransformerException, SAXException {
+		Transformer transformer = templates.newTransformer();
 
+		String filename = file.getName();
+		String ext_file = filename.substring(filename.lastIndexOf(".") + 1, filename.length());
+		String ext = "xhtml";
+		String oldFileName = file.getParent() + "/" + oldFileBackupPrefix + filename;
+		File oldName = new File(oldFileName);
+		if (ext.equals(ext_file) && !filename.startsWith(oldFileBackupPrefix)) {
+			if (!oldName.exists() && !preserveSourceFile) {
+				FileUtil.copyFile(file, oldName);
+			} else if (notMigratedOnly && !preserveSourceFile) {
+				return;
+			}
 
-
-            String text = new String(Files.readAllBytes(oldName.toPath()));
+			SAXParserFactory spf = SAXParserFactory.newInstance();
+			spf.setNamespaceAware(true);
+			XMLReader xmlReader = spf.newSAXParser().getXMLReader();
+			xmlReader.setEntityResolver((publicId, systemId) -> {
+				return new InputSource(new StringReader("")); // Never resolve any IDs
+			});
+			String text;
+			if (preserveSourceFile) {
+				text = new String(Files.readAllBytes(file.toPath()));
+			} else {
+				text = new String(Files.readAllBytes(oldName.toPath()));
+			}
 //            text = replaceStrings(text);
 
-            SAXSource source = new SAXSource(xmlReader, new InputSource(new StringReader(text)));
+			SAXSource source = new SAXSource(xmlReader, new InputSource(new StringReader(text)));
 //            Source source = new StreamSource(new StringReader(text));
-            System.out.println("XSLT transformation started: "+file.getAbsolutePath());
+			System.out.println("XSLT transformation started: " + file.getAbsolutePath());
 
-            StreamResult result = new StreamResult(file);
+			StreamResult result = new StreamResult(file);
 //                    Document doc = db.parse(new FileInputStream(oldName));
-            transformer.transform(source, result);
-            text = new String(Files.readAllBytes(file.toPath()));
-            text = replaceStrings(text);
-            FileUtils.write(file, text);
-            System.out.println("XSLT transformed file: "+file.getAbsolutePath());
-        }
-    }
+			transformer.transform(source, result);
+			text = new String(Files.readAllBytes(file.toPath()));
+			text = replaceStrings(text);
+			FileUtils.write(file, text);
+			System.out.println("XSLT transformed file: " + file.getAbsolutePath());
+		}
+	}
 
-    private String replaceStrings(String text) {
-        String result = text;
-        for (Map.Entry<String, String> e : stringsToReplace.entrySet()) {
-            result = result.replaceAll(e.getKey(), e.getValue());
-        }
-        return result;
-    }
+	private String replaceStrings(String text) {
+		String result = text;
+		for (Map.Entry<String, String> e : stringsToReplace.entrySet()) {
+			result = result.replaceAll(e.getKey(), e.getValue());
+		}
+		return result;
+	}
 }

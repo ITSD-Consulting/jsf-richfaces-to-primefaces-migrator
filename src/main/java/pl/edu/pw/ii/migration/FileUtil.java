@@ -11,4 +11,9 @@ public class FileUtil {
     public static void copyFile(File sourceFile, File destFile) throws IOException {
         FileUtils.copyFile(sourceFile,destFile);
     }
+    
+    public static void copyFileToDirectory(File sourceFile, File destFile) throws IOException {
+        FileUtils.copyFileToDirectory(sourceFile,destFile);
+    }
+    
 }
