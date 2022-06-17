@@ -32,6 +32,7 @@ public class Main {
 	@Parameter(names = { "--configFile", "-c" }, description = "Custom config file location")
 	private String configFileParam;
 
+	
 	@Parameter(names = { "--webContentPath",
 			"-wcp" }, description = "Web content path with files to process. Takes precedence over value from config file")
 	private String webContentPathParam;

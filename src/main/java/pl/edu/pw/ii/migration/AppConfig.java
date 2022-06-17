@@ -14,6 +14,7 @@ public class AppConfig {
     static String oldFileBackupPrefix;
     static Map<String, String> stringsToReplace = new HashMap<>();
 
+    
     static {
         stringsToReplace.put("xmlns:a4j=\"http://richfaces.org/a4j\"", "");
         stringsToReplace.put("xmlns:a=\"http://richfaces.org/a4j\"", "xmlns:p=\"http://primefaces.org/ui\"");

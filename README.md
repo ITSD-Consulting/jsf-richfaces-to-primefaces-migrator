@@ -27,6 +27,8 @@ Step 3:
     oldFileBackupPrefix="old_" (String prefix applied to the copies of the original xhtml code if no -wtp argument is applied)
     
     
+    
+    
 Step 4:
 -Use the migrator
 -Open the Main.java of the migrator and click "Run main"

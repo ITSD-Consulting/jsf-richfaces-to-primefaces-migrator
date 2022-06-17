@@ -43,6 +43,7 @@
 	</xsl:template>
 
 
+
 	<xsl:template match="a4j:support" name="a4j:support">
 		<p:ajax>
 			<xsl:choose>
