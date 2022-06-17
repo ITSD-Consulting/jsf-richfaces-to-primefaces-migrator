@@ -43,6 +43,8 @@ public class Main {
 	@Parameter(names = { "--help", "-h" }, help = true)
 	private boolean help;
 
+	private boolean webTargetPathExists;
+	
 	public static void main(String[] args)
 			throws TransformerException, IOException, ParserConfigurationException, SAXException {
 		Main main = new Main();
@@ -81,7 +83,7 @@ public class Main {
 		} else {
 			files = new File[] { webContentPathFile };
 		}
-		if (preserveSourceFile) {
+		if (webTargetPathExists) {
 
 			File webTargetPathFile = new File(webTargetPath);
 			Arrays.stream(files).parallel().forEach(file -> {
@@ -124,6 +126,9 @@ public class Main {
 		if (StringUtils.isNotBlank(webTargetPathParam)) {
 			webTargetPath = webTargetPathParam;
 		}
+		
+		webTargetPathExists = !(webTargetPath.equals(""));
+		
 		System.setProperty("javax.xml.transform.TransformerFactory", "net.sf.saxon.TransformerFactoryImpl");
 	}
 
@@ -138,14 +143,14 @@ public class Main {
 					}
 					return;
 				}
-				trnasformFile(templates, file);
+				transformFile(templates, file);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
 	}
 
-	private void trnasformFile(Templates templates, File file)
+	private void transformFile(Templates templates, File file)
 			throws ParserConfigurationException, IOException, TransformerException, SAXException {
 		Transformer transformer = templates.newTransformer();
 
@@ -155,9 +160,9 @@ public class Main {
 		String oldFileName = file.getParent() + "/" + oldFileBackupPrefix + filename;
 		File oldName = new File(oldFileName);
 		if (ext.equals(ext_file) && !filename.startsWith(oldFileBackupPrefix)) {
-			if (!oldName.exists() && !preserveSourceFile) {
+			if (!oldName.exists() && !webTargetPathExists) {
 				FileUtil.copyFile(file, oldName);
-			} else if (notMigratedOnly && !preserveSourceFile) {
+			} else if (notMigratedOnly && !webTargetPathExists) {
 				return;
 			}
 
@@ -168,7 +173,7 @@ public class Main {
 				return new InputSource(new StringReader("")); // Never resolve any IDs
 			});
 			String text;
-			if (preserveSourceFile) {
+			if (webTargetPathExists) {
 				text = new String(Files.readAllBytes(file.toPath()));
 			} else {
 				text = new String(Files.readAllBytes(oldName.toPath()));
@@ -195,5 +200,13 @@ public class Main {
 			result = result.replaceAll(e.getKey(), e.getValue());
 		}
 		return result;
+	}
+
+	public boolean isWebTargetPathExists() {
+		return webTargetPathExists;
+	}
+
+	public void setWebTargetPathExists(boolean webTargetPathExists) {
+		this.webTargetPathExists = webTargetPathExists;
 	}
 }
